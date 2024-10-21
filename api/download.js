@@ -2,25 +2,26 @@
 const ytdl = require('ytdl-core');
 
 export default async (req, res) => {
-  const { url } = req.query;
+ const ytdl = require('ytdl-core');
+const HttpsProxyAgent = require('https-proxy-agent');
 
-  if (!url) {
-    return res.status(400).json({ error: 'You must provide a URL' });
-  }
+const proxy = 'http:/45.119.133.218:3128';  // Replace with your proxy details 
+const agent = new HttpsProxyAgent(proxy);
 
-try {
-  const info = await ytdl.getInfo(url);
-  const formats = info.formats;
+const videoUrl = 'https://www.youtube.com/watch?v=s3uPtdHlc68';
 
-  const highResFormats = formats.filter(format => format.qualityLabel && format.qualityLabel.includes('p'));
-  highResFormats.sort((a, b) => parseInt(b.qualityLabel) - parseInt(a.qualityLabel));
+ytdl.getInfo(videoUrl, { requestOptions: { agent } })
+  .then(info => {
+    const formats = info.formats;
+    const highResFormats = formats.filter(format => format.qualityLabel && format.qualityLabel.includes('p'));
+    highResFormats.sort((a, b) => parseInt(b.qualityLabel) - parseInt(a.qualityLabel));
 
-  const highestResVideoUrl = highResFormats[0].url;
+    const highestResVideoUrl = highResFormats[0].url;
+    console.log('Download URL for highest resolution:', highestResVideoUrl);
+  })
+  .catch(err => {
+    console.error('Error fetching video info:', err);
+  });
 
-  return res.status(200).json({ downloadUrl: highestResVideoUrl });
-} catch (error) {
-  console.error('Error fetching video info:', error);  // Log the actual error
-  return res.status(500).json({ error: 'Failed to fetch video info', details: error.message });
-}
 
 };
