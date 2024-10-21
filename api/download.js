@@ -8,17 +8,19 @@ export default async (req, res) => {
     return res.status(400).json({ error: 'You must provide a URL' });
   }
 
-  try {
-    const info = await ytdl.getInfo(url);
-    const formats = info.formats;
+try {
+  const info = await ytdl.getInfo(url);
+  const formats = info.formats;
 
-    const highResFormats = formats.filter(format => format.qualityLabel && format.qualityLabel.includes('p'));
-    highResFormats.sort((a, b) => parseInt(b.qualityLabel) - parseInt(a.qualityLabel));
+  const highResFormats = formats.filter(format => format.qualityLabel && format.qualityLabel.includes('p'));
+  highResFormats.sort((a, b) => parseInt(b.qualityLabel) - parseInt(a.qualityLabel));
 
-    const highestResVideoUrl = highResFormats[0].url;
+  const highestResVideoUrl = highResFormats[0].url;
 
-    return res.status(200).json({ downloadUrl: highestResVideoUrl });
-  } catch (error) {
-    return res.status(500).json({ error: 'Failed to fetch video info' });
-  }
+  return res.status(200).json({ downloadUrl: highestResVideoUrl });
+} catch (error) {
+  console.error('Error fetching video info:', error);  // Log the actual error
+  return res.status(500).json({ error: 'Failed to fetch video info', details: error.message });
+}
+
 };
